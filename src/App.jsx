@@ -4,6 +4,7 @@ import './App.css'
 function App() {
     const [currentPage, setCurrentPage] = useState('home')
     const [isTransitioning, setIsTransitioning] = useState(false)
+    const [isRolling, setIsRolling] = useState(false)
     const [nextPage, setNextPage] = useState('home')
 
     useEffect(() => {
@@ -24,18 +25,30 @@ function App() {
 
     const handlePageChange = (newPage) => {
         setNextPage(newPage)
-        setIsTransitioning(true)
+        setIsTransitioning(true)  // Start transition - curtain will slide up
+        setIsRolling(false)
 
-        // After curtain covers screen, change page
+        // PHASE 1: Curtain slides up from bottom to cover screen (1 second)
+        // The 'active' class makes translateY go from 100% to 0%
+        // After 1 second, the curtain is fully covering the screen
+
         setTimeout(() => {
+            // Change the page content while curtain is covering everything
             setCurrentPage(newPage)
             window.location.hash = newPage === 'home' ? '' : newPage
 
-            // After page changes, slide curtain up
+            // PHASE 2: Start rolling up animation
+            // The 'rolling' class makes scaleY go from 1 to 0
+            // With transform-origin: bottom, it shrinks from bottom to top
+            setIsRolling(true)
+
+            // After rolling up completes (1 second), reset everything
             setTimeout(() => {
-                setIsTransitioning(false)
-            }, 50)
-        }, 500) // Half of transition duration
+                setIsTransitioning(false)  // Remove 'active' class
+                setIsRolling(false)        // Remove 'rolling' class
+                // Curtain resets to translateY(100%) - hidden below screen
+            }, 1000)
+        }, 1000) // Wait 1 second for Phase 1 (sliding up)
     }
 
     const handleNavClick = (e, page) => {
@@ -104,7 +117,7 @@ function App() {
             <main className="main-content">
                 {renderContent()}
             </main>
-            <div className={`page-transition-curtain ${isTransitioning ? 'active' : ''}`}></div>
+            <div className={`page-transition-curtain ${isTransitioning ? 'active' : ''} ${isRolling ? 'rolling' : ''}`}></div>
         </div>
     )
 }
